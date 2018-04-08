@@ -20,4 +20,5 @@ todo32.exe: todo.c platform_windows32.o
 platform_windows32.o: platform_windows.c platform_windows.h
 	i686-w64-mingw32-gcc -c platform_windows.c
 
-clean: rm *.o
+clean: 
+	rm *.o
