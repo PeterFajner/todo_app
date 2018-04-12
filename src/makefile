@@ -25,13 +25,13 @@ OBJSW64 = $(patsubst %,$(OBJDIR)/$(PREFW64)%,$(_OBJS))
 all: linux win32 win64
 
 linux: $(OBJSL)
-	$(CC) -o todo $^ $(CFLAGS) $(LFLAGS)
+	$(CC) -o $(BINDIR)/todo $^ $(CFLAGS) $(LFLAGS)
 
 win32: $(OBJSW32)
-	$(CCW32) -o todo32.exe $^ $(CFLAGS) $(WFLAGS)
+	$(CCW32) -o $(BINDIR)/todo32.exe $^ $(CFLAGS) $(WFLAGS)
 
 win64: $(OBJSW64)
-	$(CCW64) -o todo64.exe $^ $(CFLAGS) $(WFLAGS)
+	$(CCW64) -o $(BINDIR)/todo64.exe $^ $(CFLAGS) $(WFLAGS)
 
 $(OBJDIR)/$(PREFL)%.o: $(SRCDIR)/%.c $(DEPS)
 	$(CCL) -c -o $@ $< $(CFLAGS) $(LFLAGS)
