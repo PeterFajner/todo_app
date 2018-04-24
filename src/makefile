@@ -17,15 +17,17 @@ BINDIR = ../bin
 _DEPS = platform_unix.h platform_windows.h
 DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
 
-_OBJS = todo.o platform_unix.o platform_windows.o
-OBJSL = $(patsubst %,$(OBJDIR)/$(PREFL)%,$(_OBJS))
-OBJSW32 = $(patsubst %,$(OBJDIR)/$(PREFW32)%,$(_OBJS))
-OBJSW64 = $(patsubst %,$(OBJDIR)/$(PREFW64)%,$(_OBJS))
+_OBJS = todo.o
+_OBJSL = platform_unix.o
+_OBJSW = platform_windows.o
+OBJSL = $(patsubst %,$(OBJDIR)/$(PREFL)%,$(_OBJS)) $(patsubst %,$(OBJDIR)/$(PREFL)%,$(_OBJSL))
+OBJSW32 = $(patsubst %,$(OBJDIR)/$(PREFW32)%,$(_OBJS)) $(patsubst %,$(OBJDIR)/$(PREFW32)%,$(_OBJSW))
+OBJSW64 = $(patsubst %,$(OBJDIR)/$(PREFW64)%,$(_OBJS)) $(patsubst %,$(OBJDIR)/$(PREFW64)%,$(_OBJSW))
 
 all: linux win32 win64
 
 linux: $(OBJSL)
-	$(CC) -o $(BINDIR)/todo $^ $(CFLAGS) $(LFLAGS)
+	$(CCL) -o $(BINDIR)/todo $^ $(CFLAGS) $(LFLAGS)
 
 win32: $(OBJSW32)
 	$(CCW32) -o $(BINDIR)/todo32.exe $^ $(CFLAGS) $(WFLAGS)
@@ -33,13 +35,13 @@ win32: $(OBJSW32)
 win64: $(OBJSW64)
 	$(CCW64) -o $(BINDIR)/todo64.exe $^ $(CFLAGS) $(WFLAGS)
 
-$(OBJDIR)/$(PREFL)%.o: $(SRCDIR)/%.c $(DEPS)
+$(OBJDIR)/$(PREFL)%.o: $(SRCDIR)/%.c $(SRCDIR)/linux/%.c $(SRCDIR)/%.h $(SRCDIR)/linux/%.h
 	$(CCL) -c -o $@ $< $(CFLAGS) $(LFLAGS)
 
-$(OBJDIR)/$(PREFW32)%.o: $(SRCDIR)/%.c $(DEPS)
+$(OBJDIR)/$(PREFW32)%.o: $(SRCDIR)/%.c $(SRCDIR)/windows/%.c $(SRCDIR)/%.h $(SRCDIR)/windows/%.h
 	$(CCW32) -c -o $@ $< $(CFLAGS) $(WFLAGS)
 
-$(OBJDIR)/$(PREFW64)%.o: $(SRCDIR)/%.c $(DEPS)
+$(OBJDIR)/$(PREFW64)%.o: $(SRCDIR)/%.c $(SRCDIR)/windows/%.c $(SRCDIR)/%.h $(SRCDIR)/windows/%.h
 	$(CCW64) -c -o $@ $< $(CFLAGS) $(WFLAGS)
 
 .PHONY: clean
