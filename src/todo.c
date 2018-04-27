@@ -19,6 +19,7 @@
 
 #include PLATFORM
 
+#define PROJECTNAME "todo"
 #define FNAME "db.txt"
 #define TMP_FNAME "db.txt.tmp"
 #define MAXLEN 1000 // maximum allowed length of a line
@@ -31,42 +32,54 @@
 /**
  * Print the command options.
  */
-void print_usage(const char *fname);
+void print_usage(const char *commandname);
 
 /**
  * Add a new entry to the todo list.
  * Input text: the text to add
  * Return: ID of the new entry
  */
-int add_entry(const char *text);
+int add_entry(const char *text, const char *fpath);
 
 /**
  * Calculates, and returns the length of the longest entry
  * Return: the length of the longest entry
  */
-int calc_maxlen();
+int calc_maxlen(const char *fpath);
 
 /**
  * Return: the number of entries in the list
  */
-int get_num_entries();
+int get_num_entries(const char *fpath);
 
 /**
  * List the entries in the todo list.
  * Input entries: pointer to an array to store the entries in
  * Input maxlen: maximum length of an individual entry
  */
-void list_entries(char *entries, const int maxlen);
+void list_entries(char *entries, const int maxlen, const char *fpath);
 
 /**
  * Input id: ID of the entry to delete
  * Return: 0 if the entry is successfully deleted
  *        -1 if the entry does not exist
  */
-int del_entry(const int id);
+int del_entry(const int id, const char *fpath, const char *tmpfpath);
 
 int main(int argc, char **argv)
 {
+	// setup database directory
+	char *fpath = calloc(1, 5000);
+	get_fpath(fpath, PROJECTNAME);
+
+	printf("path: %s\n", fpath);
+
+	char *tmpfpath = malloc(strlen(fpath) + strlen(TMP_FNAME) + 1);
+	strcpy(tmpfpath, fpath);
+	strcat(tmpfpath, TMP_FNAME);
+
+	strcat(fpath, FNAME);
+
 	// handle arguments
 	if (argc == 1) print_usage(argv[0]);
 	else {
@@ -81,14 +94,14 @@ int main(int argc, char **argv)
 			if (strlen(text) >= MAXLEN) {
 				printf("Entry too long! Maximum length %d characters.\n", MAXLEN-1);
 			}
-			int id = add_entry(text);
+			int id = add_entry(text, fpath);
 			printf("Stored entry, ID %d\n", id);
 		}
 		else if (strcmp(command, LIST) == 0) {
-			int num_entries = get_num_entries();
+			int num_entries = get_num_entries(fpath);
 			int maxlen = MAXLEN; //calc_maxlen();
-			char *entries = malloc(num_entries*maxlen);
-			list_entries(entries, maxlen);
+			char *entries = calloc(num_entries, maxlen);
+			list_entries(entries, maxlen, fpath);
 			printf("%"PADDING"s Entry\n", "ID");
 			for (int i = 0; i < num_entries; i++) {
 				int id;
@@ -105,7 +118,7 @@ int main(int argc, char **argv)
 				return EXIT_FAILURE;
 			}
 			int id = atoi(argv[2]);
-			int err = del_entry(id);
+			int err = del_entry(id, fpath, tmpfpath);
 			if (!err) printf("Entry %d deleted\n", id);
 			else printf("Could not delete entry %d, does it exist?\n", id);
 		}
@@ -113,18 +126,18 @@ int main(int argc, char **argv)
 	}
 }
 
-void print_usage(const char *fname)
+void print_usage(const char *commandname)
 {
 	printf("Usage: \n");
-	printf("%s "ADD" <line>     -- add a new todo item\n", fname);
-	printf("%s "LIST"           -- list todo items\n", fname);
-	printf("%s "DEL" <id>       -- delete a todo item\n", fname);
+	printf("%s "ADD" <line>     -- add a new todo item\n", commandname);
+	printf("%s "LIST"           -- list todo items\n", commandname);
+	printf("%s "DEL" <id>       -- delete a todo item\n", commandname);
 }
 
-int add_entry(const char *text)
+int add_entry(const char *text, const char *fpath)
 {
 	FILE *fp;
-	fp = fopen(FNAME, "a+");
+	fp = fopen(fpath, "a+");
 
 	// get ID to insert
 	char tmp[100] = {0,};
@@ -141,10 +154,10 @@ int add_entry(const char *text)
 	return id;
 }
 
-int calc_maxlen()
+int calc_maxlen(const char *fpath)
 {
 	FILE *fp;
-	fp = fopen(FNAME, "a+");
+	fp = fopen(fpath, "a+");
 
 	int maxlen = 0;
 	char tmp[MAXLEN] = {0,};
@@ -158,10 +171,10 @@ int calc_maxlen()
 	return maxlen;
 }
 
-int get_num_entries()
+int get_num_entries(const char *fpath)
 {
 	FILE *fp;
-	fp = fopen(FNAME, "a+");
+	fp = fopen(fpath, "a+");
 
 	int num_entries = 0;
 	char tmp[MAXLEN];
@@ -172,10 +185,10 @@ int get_num_entries()
 	fclose(fp);
 }
 
-void list_entries(char *entries, const int maxlen)
+void list_entries(char *entries, const int maxlen, const char *fpath)
 {
 	FILE *fp;
-	fp = fopen(FNAME, "a+");
+	fp = fopen(fpath, "a+");
 
 	int entry_num = 0;
 	char tmp_str[MAXLEN];
@@ -189,12 +202,12 @@ void list_entries(char *entries, const int maxlen)
 	fclose(fp);
 }
 
-int del_entry(const int id)
+int del_entry(const int id, const char *fpath, const char *tmpfpath)
 {
 	FILE *fp;
 	FILE *tmpfp;
-	fp = fopen(FNAME, "a+");
-	tmpfp = fopen(TMP_FNAME, "w");
+	fp = fopen(fpath, "a+");
+	tmpfp = fopen(tmpfpath, "w");
 
 	int return_code = -1;
 
@@ -208,8 +221,8 @@ int del_entry(const int id)
 
 	fclose(fp);
 	fclose(tmpfp);
-	remove(FNAME);
-	rename(TMP_FNAME, FNAME);
+	remove(fpath);
+	rename(tmpfpath, FNAME);
 
 	return return_code;
 }

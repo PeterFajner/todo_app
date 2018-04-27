@@ -14,8 +14,11 @@ SRCDIR = .
 OBJDIR = $(SRCDIR)/obj
 BINDIR = ../bin
 
-_DEPS = platform_unix.h platform_windows.h
-DEPS = $(patsubst %,$(SRCDIR)/%,$(_DEPS))
+
+_DEPSL = platform_unix.h
+_DEPSW = platform_windows.h
+DEPSL = $(patsubst %,$(SRCDIR)/%,$(_DEPSL))
+DEPSW = $(patsubst %,$(SRCDIR)/%,$(_DEPSW))
 
 _OBJS = todo.o
 _OBJSL = platform_unix.o
@@ -35,13 +38,23 @@ win32: $(OBJSW32)
 win64: $(OBJSW64)
 	$(CCW64) -o $(BINDIR)/todo64.exe $^ $(CFLAGS) $(WFLAGS)
 
-$(OBJDIR)/$(PREFL)%.o: $(SRCDIR)/%.c $(SRCDIR)/linux/%.c $(SRCDIR)/%.h $(SRCDIR)/linux/%.h
-	$(CCL) -c -o $@ $< $(CFLAGS) $(LFLAGS)
 
-$(OBJDIR)/$(PREFW32)%.o: $(SRCDIR)/%.c $(SRCDIR)/windows/%.c $(SRCDIR)/%.h $(SRCDIR)/windows/%.h
+$(OBJDIR)/$(PREFW64)todo.o: $(SRCDIR)/todo.c
+	$(CCW64) -c -o $@ $< $(CFLAGS) $(WFLAGS)
+
+$(OBJDIR)/$(PREFW32)todo.o: $(SRCDIR)/todo.c
 	$(CCW32) -c -o $@ $< $(CFLAGS) $(WFLAGS)
 
-$(OBJDIR)/$(PREFW64)%.o: $(SRCDIR)/%.c $(SRCDIR)/windows/%.c $(SRCDIR)/%.h $(SRCDIR)/windows/%.h
+$(OBJDIR)/$(PREFL)todo.o: $(SRCDIR)/todo.c
+	$(CCL) -c -o $@ $< $(CFLAGS) $(LFLAGS)
+
+$(OBJDIR)/$(PREFL)%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
+	$(CCL) -c -o $@ $< $(CFLAGS) $(LFLAGS)
+
+$(OBJDIR)/$(PREFW32)%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
+	$(CCW32) -c -o $@ $< $(CFLAGS) $(WFLAGS)
+
+$(OBJDIR)/$(PREFW64)%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
 	$(CCW64) -c -o $@ $< $(CFLAGS) $(WFLAGS)
 
 .PHONY: clean
