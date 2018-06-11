@@ -1,4 +1,4 @@
-CFLAGS = -O0 -g
+CFLAGS = -O3 -g -std=c99 -Wall -Wextra -Wpedantic
 WFLAGS = -DPLATFORM='"platform_windows.h"'
 LFLAGS = -DPLATFORM='"platform_unix.h"'
 
@@ -31,6 +31,9 @@ all: linux win32 win64
 
 linux: $(OBJSL)
 	$(CCL) -o $(BINDIR)/todo $^ $(CFLAGS) $(LFLAGS)
+	
+test: $(OBJSL)
+	$(CCL) -o $(BINDIR)/todo $^ -Og -g -std=c99 -Wall -Wextra -Wpedantic $(LFLAGS)
 
 win32: $(OBJSW32)
 	$(CCW32) -o $(BINDIR)/todo32.exe $^ $(CFLAGS) $(WFLAGS)
